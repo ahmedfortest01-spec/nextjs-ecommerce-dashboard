@@ -4,20 +4,17 @@
   "features": {
     "ghcr.io/devcontainers/features/github-cli:1": {}
   },
-  "postCreateCommand": "npm install",
+  "postCreateCommand": "npm install && npm run build",
   "customizations": {
     "codespaces": {
       "openFiles": ["src/app/page.tsx"]
-    },
-    "vscode": {
-      "extensions": ["esbenp.prettier-vscode", "dbaeumer.vscode-eslint"]
     }
   },
   "portsAttributes": {
     "3000": {
-      "label": "Next.js Dev Server",
-      "onAutoForward": "notify"
+      "label": "Next.js",
+      "onAutoForward": "openBrowser"
     }
   },
-  "postStartCommand": "npm run dev"
+  "postStartCommand": "npm run dev -- -p 3000"
 }
