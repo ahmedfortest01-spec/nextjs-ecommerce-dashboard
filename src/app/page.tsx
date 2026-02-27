@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useStore } from '@/lib/store';
-import { ArrowRight, Package, Shield, Truck } from 'lucide-react';
+import { ArrowRight, Package, Shield, Truck, User, LogIn } from 'lucide-react';
 import ProductCard from '@/components/ProductCard';
 
 export default function HomePage() {
@@ -21,13 +21,29 @@ export default function HomePage() {
             <p className="text-xl mb-8 text-blue-100">
               Discover amazing products at unbeatable prices. Your one-stop shop for everything you need.
             </p>
-            <Link
-              href="/shop"
-              className="inline-flex items-center space-x-2 bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors"
-            >
-              <span>Shop Now</span>
-              <ArrowRight className="w-5 h-5" />
-            </Link>
+            <div className="flex flex-wrap gap-4">
+              <Link
+                href="/shop"
+                className="inline-flex items-center space-x-2 bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors"
+              >
+                <span>Shop Now</span>
+                <ArrowRight className="w-5 h-5" />
+              </Link>
+              <Link
+                href="/login"
+                className="inline-flex items-center space-x-2 bg-transparent border-2 border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition-colors"
+              >
+                <LogIn className="w-5 h-5" />
+                <span>Login</span>
+              </Link>
+              <Link
+                href="/register"
+                className="inline-flex items-center space-x-2 bg-yellow-500 text-gray-900 px-6 py-3 rounded-lg font-semibold hover:bg-yellow-400 transition-colors"
+              >
+                <User className="w-5 h-5" />
+                <span>Register</span>
+              </Link>
+            </div>
           </div>
         </div>
       </section>
