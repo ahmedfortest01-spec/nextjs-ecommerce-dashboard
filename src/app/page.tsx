@@ -1,10 +1,10 @@
-import Link from "next/link";
-import { products } from "@/data/products";
-import { ProductCard } from "@/components/ProductCard";
-import { ArrowRight, Package, Shield, Truck } from "lucide-react";
+import Link from 'next/link';
+import { products as allProducts } from '@/lib/store';
+import { ArrowRight, Package, Shield, Truck } from 'lucide-react';
+import ProductCard from '@/components/ProductCard';
 
 export default function HomePage() {
-  const featuredProducts = products.slice(0, 4);
+  const featuredProducts = allProducts.slice(0, 4);
 
   return (
     <div>
@@ -63,7 +63,7 @@ export default function HomePage() {
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-3xl font-bold">Featured Products</h2>
-            <Link href="/shop" className="text-primary hover:underline flex items-center space-x-1">
+            <Link href="/shop" className="text-blue-600 hover:underline flex items-center space-x-1">
               <span>View All</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
