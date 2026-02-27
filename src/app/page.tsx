@@ -1,10 +1,13 @@
+'use client';
+
 import Link from 'next/link';
-import { products as allProducts } from '@/lib/store';
+import { useStore } from '@/lib/store';
 import { ArrowRight, Package, Shield, Truck } from 'lucide-react';
 import ProductCard from '@/components/ProductCard';
 
 export default function HomePage() {
-  const featuredProducts = allProducts.slice(0, 4);
+  const products = useStore((state) => state.products);
+  const featuredProducts = products.slice(0, 4);
 
   return (
     <div>
