@@ -15,8 +15,10 @@ export interface CartItem extends Product {
 }
 
 export interface User {
+  id: string;
   name: string;
   email: string;
+  role: 'user' | 'admin';
 }
 
 export interface Order {
@@ -30,9 +32,10 @@ export interface Order {
 interface StoreState {
   // Products
   products: Product[];
-  addProduct: (product: Product) => void;
-  updateProduct: (id: string, product: Partial<Product>) => void;
-  deleteProduct: (id: string) => void;
+  fetchProducts: () => Promise<void>;
+  addProduct: (product: Omit<Product, 'id'>) => Promise<boolean>;
+  updateProduct: (id: string, product: Partial<Product>) => Promise<boolean>;
+  deleteProduct: (id: string) => Promise<boolean>;
   
   // Cart
   cart: CartItem[];
@@ -43,103 +46,81 @@ interface StoreState {
   
   // User
   user: User | null;
-  login: (email: string, password: string) => boolean;
-  register: (name: string, email: string, password: string) => boolean;
-  logout: () => void;
+  checkSession: () => Promise<void>;
+  login: (email: string, password: string) => Promise<boolean>;
+  register: (name: string, email: string, password: string, role?: string) => Promise<boolean>;
+  logout: () => Promise<void>;
   
   // Orders
   orders: Order[];
   addOrder: (order: Order) => void;
 }
 
-const initialProducts: Product[] = [
-  {
-    id: '1',
-    name: 'Wireless Bluetooth Headphones',
-    price: 79.99,
-    category: 'Electronics',
-    image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400',
-    description: 'Premium wireless headphones with noise cancellation',
-  },
-  {
-    id: '2',
-    name: 'Smart Watch Series X',
-    price: 299.99,
-    category: 'Electronics',
-    image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400',
-    description: 'Advanced smartwatch with health monitoring',
-  },
-  {
-    id: '3',
-    name: 'Running Shoes Pro',
-    price: 129.99,
-    category: 'Clothing',
-    image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400',
-    description: 'Lightweight running shoes with superior cushioning',
-  },
-  {
-    id: '4',
-    name: 'Laptop Stand Ergonomic',
-    price: 49.99,
-    category: 'Electronics',
-    image: 'https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=400',
-    description: 'Adjustable laptop stand for better posture',
-  },
-  {
-    id: '5',
-    name: 'Cotton T-Shirt Pack',
-    price: 39.99,
-    category: 'Clothing',
-    image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400',
-    description: 'Pack of 3 premium cotton t-shirts',
-  },
-  {
-    id: '6',
-    name: 'Wireless Mouse',
-    price: 29.99,
-    category: 'Electronics',
-    image: 'https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=400',
-    description: 'Ergonomic wireless mouse with precision tracking',
-  },
-  {
-    id: '7',
-    name: 'Denim Jacket',
-    price: 89.99,
-    category: 'Clothing',
-    image: 'https://images.unsplash.com/photo-1576995853123-5a10305d93c0?w=400',
-    description: 'Classic denim jacket for all seasons',
-  },
-  {
-    id: '8',
-    name: 'Portable Charger 20000mAh',
-    price: 45.99,
-    category: 'Electronics',
-    image: 'https://images.unsplash.com/photo-1609091839311-d5365f9ff1c5?w=400',
-    description: 'High-capacity portable charger with fast charging',
-  },
-];
-
-const fakeUsers = [
-  { name: 'Ahmed', email: 'test@ahmed.com', password: '123456' },
-];
-
 export const useStore = create<StoreState>()(
   persist(
     (set, get) => ({
       // Products
-      products: initialProducts,
-      addProduct: (product) =>
-        set((state) => ({ products: [...state.products, product] })),
-      updateProduct: (id, updatedProduct) =>
-        set((state) => ({
-          products: state.products.map((p) =>
-            p.id === id ? { ...p, ...updatedProduct } : p
-          ),
-        })),
-      deleteProduct: (id) =>
-        set((state) => ({
-          products: state.products.filter((p) => p.id !== id),
-        })),
+      products: [],
+      fetchProducts: async () => {
+        try {
+          const res = await fetch('/api/products');
+          const data = await res.json();
+          if (data.products) {
+            set({ products: data.products.map((p: any) => ({ ...p, id: p._id })) });
+          }
+        } catch (error) {
+          console.error('Error fetching products:', error);
+        }
+      },
+      addProduct: async (productData) => {
+        try {
+          const res = await fetch('/api/products', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(productData),
+          });
+          if (res.ok) {
+            get().fetchProducts();
+            return true;
+          }
+          return false;
+        } catch (error) {
+          console.error('Error adding product:', error);
+          return false;
+        }
+      },
+      updateProduct: async (id, updatedProduct) => {
+        try {
+          const res = await fetch(`/api/products/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updatedProduct),
+          });
+          if (res.ok) {
+            get().fetchProducts();
+            return true;
+          }
+          return false;
+        } catch (error) {
+          console.error('Error updating product:', error);
+          return false;
+        }
+      },
+      deleteProduct: async (id) => {
+        try {
+          const res = await fetch(`/api/products/${id}`, {
+            method: 'DELETE',
+          });
+          if (res.ok) {
+            get().fetchProducts();
+            return true;
+          }
+          return false;
+        } catch (error) {
+          console.error('Error deleting product:', error);
+          return false;
+        }
+      },
 
       // Cart
       cart: [],
@@ -171,53 +152,62 @@ export const useStore = create<StoreState>()(
 
       // User
       user: null,
-      login: (email, password) => {
-        const foundUser = fakeUsers.find(
-          (u) => u.email === email && u.password === password
-        );
-        if (foundUser) {
-          set({ user: { name: foundUser.name, email: foundUser.email } });
-          return true;
+      checkSession: async () => {
+        try {
+          const res = await fetch('/api/auth/me');
+          const data = await res.json();
+          if (data.user) {
+            set({ user: data.user });
+          } else {
+            set({ user: null });
+          }
+        } catch (error) {
+          set({ user: null });
         }
-        return false;
       },
-      register: (name, email, password) => {
-        fakeUsers.push({ name, email, password });
-        set({ user: { name, email } });
-        return true;
+      login: async (email, password) => {
+        try {
+          const res = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password }),
+          });
+          const data = await res.json();
+          if (res.ok && data.user) {
+            set({ user: data.user });
+            return true;
+          }
+          return false;
+        } catch (error) {
+          console.error('Login error:', error);
+          return false;
+        }
       },
-      logout: () => set({ user: null, cart: [] }),
+      register: async (name, email, password, role = 'user') => {
+        try {
+          const res = await fetch('/api/auth/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, email, password, role }),
+          });
+          const data = await res.json();
+          if (res.ok && data.user) {
+            set({ user: data.user });
+            return true;
+          }
+          return false;
+        } catch (error) {
+          console.error('Registration error:', error);
+          return false;
+        }
+      },
+      logout: async () => {
+        await fetch('/api/auth/me', { method: 'DELETE' });
+        set({ user: null, cart: [] });
+      },
 
       // Orders
-      orders: [
-        {
-          id: 'ORD-001',
-          date: '2026-02-25',
-          items: [
-            { ...initialProducts[0], quantity: 2 },
-            { ...initialProducts[2], quantity: 1 },
-          ],
-          total: 289.97,
-          status: 'delivered',
-        },
-        {
-          id: 'ORD-002',
-          date: '2026-02-26',
-          items: [{ ...initialProducts[1], quantity: 1 }],
-          total: 299.99,
-          status: 'shipped',
-        },
-        {
-          id: 'ORD-003',
-          date: '2026-02-27',
-          items: [
-            { ...initialProducts[4], quantity: 2 },
-            { ...initialProducts[6], quantity: 1 },
-          ],
-          total: 169.97,
-          status: 'processing',
-        },
-      ],
+      orders: [],
       addOrder: (order) =>
         set((state) => ({ orders: [order, ...state.orders] })),
     }),

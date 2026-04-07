@@ -32,10 +32,13 @@ export default function RegisterPage() {
     }
 
     setLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 500));
     
-    register(name, email, password);
-    router.push('/login');
+    const success = await register(name, email, password);
+    if (success) {
+      router.push('/dashboard');
+    } else {
+      setError('Registration failed. Email might already be in use.');
+    }
     setLoading(false);
   };
 

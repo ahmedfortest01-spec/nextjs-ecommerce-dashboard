@@ -20,14 +20,11 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
 
-    // Simulate network delay
-    await new Promise((resolve) => setTimeout(resolve, 500));
-
-    const success = login(email, password);
+    const success = await login(email, password);
     if (success) {
       router.push('/dashboard');
     } else {
-      setError('Invalid email or password. Try: test@ahmed.com / 123456');
+      setError('Invalid email or password.');
     }
     setLoading(false);
   };
