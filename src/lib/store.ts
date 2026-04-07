@@ -155,12 +155,14 @@ export const useStore = create<StoreState>()(
       checkSession: async () => {
         try {
           const res = await fetch('/api/auth/me');
-          const data = await res.json();
-          if (data.user) {
-            set({ user: data.user });
-          } else {
-            set({ user: null });
+          if (res.ok) {
+            const data = await res.json();
+            if (data.user) {
+              set({ user: data.user });
+              return;
+            }
           }
+          set({ user: null });
         } catch (error) {
           set({ user: null });
         }
@@ -202,7 +204,11 @@ export const useStore = create<StoreState>()(
         }
       },
       logout: async () => {
-        await fetch('/api/auth/me', { method: 'DELETE' });
+        try {
+          await fetch('/api/auth/me', { method: 'DELETE' });
+        } catch (error) {
+          console.error('Logout error:', error);
+        }
         set({ user: null, cart: [] });
       },
 

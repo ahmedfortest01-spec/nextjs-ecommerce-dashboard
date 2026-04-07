@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useStore } from '@/lib/store';
-import { Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, Loader2, Database } from 'lucide-react';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -12,6 +12,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [seeding, setSeeding] = useState(false);
   const router = useRouter();
   const login = useStore((state) => state.login);
 
@@ -27,6 +28,23 @@ export default function LoginPage() {
       setError('Invalid email or password.');
     }
     setLoading(false);
+  };
+
+  const handleSeed = async () => {
+    setSeeding(true);
+    try {
+      const res = await fetch('/api/seed', { method: 'POST' });
+      const data = await res.json();
+      if (res.ok) {
+        alert(data.message);
+      } else {
+        alert('Seed failed: ' + data.message);
+      }
+    } catch (err) {
+      alert('Error during seeding');
+    } finally {
+      setSeeding(false);
+    }
   };
 
   return (
@@ -107,10 +125,27 @@ export default function LoginPage() {
             </p>
           </div>
 
-          <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-            <p className="text-sm text-gray-600 font-medium mb-2">Demo Credentials:</p>
-            <p className="text-xs text-gray-500">Email: test@ahmed.com</p>
-            <p className="text-xs text-gray-500">Password: 123456</p>
+          <div className="mt-8 pt-6 border-t border-gray-100">
+            <div className="p-4 bg-blue-50 rounded-lg mb-4">
+              <p className="text-sm font-bold text-blue-900 mb-2">Demo Credentials:</p>
+              <div className="grid grid-cols-1 gap-2 text-xs text-blue-800">
+                <p><strong>Admin:</strong> admin@test.com / password123</p>
+                <p><strong>User:</strong> user@test.com / password123</p>
+              </div>
+            </div>
+
+            <button
+              onClick={handleSeed}
+              disabled={seeding}
+              className="w-full flex items-center justify-center space-x-2 text-sm text-gray-600 hover:text-blue-600 transition-colors py-2 border border-dashed border-gray-300 rounded-lg hover:border-blue-300 bg-gray-50 hover:bg-blue-50"
+            >
+              {seeding ? (
+                <Loader2 className="animate-spin" size={16} />
+              ) : (
+                <Database size={16} />
+              )}
+              <span>Initialize Demo Data</span>
+            </button>
           </div>
         </div>
       </div>

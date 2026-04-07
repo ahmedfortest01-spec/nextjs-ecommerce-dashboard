@@ -28,6 +28,8 @@ MONGODB_URI=your_mongodb_connection_string
 JWT_SECRET=your_jwt_secret
 ```
 
+> **Important**: Ensure that your MongoDB Atlas cluster allows connections from your deployment environment's IP. If you are testing locally or in a cloud environment, add `0.0.0.0/0` to your Atlas IP Access List (for development only) or whitelist your specific IP.
+
 ## API Endpoints
 
 ### Authentication
